@@ -47,3 +47,23 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Image pushen
         run: docker push "$IMAGE"
+
+  staging:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: staging
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v7
+      - name: Image-Namen festlegen
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - name: Bei GHCR anmelden
+        uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Smoke Test
+        run: bash scripts/smoke-test.sh "$IMAGE"
