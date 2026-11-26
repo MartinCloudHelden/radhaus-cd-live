@@ -60,7 +60,7 @@ jobs:
       - name: Image-Namen festlegen
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
       - name: DB Secret and env
-        run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_USER=${{ env.DB_USER }}"
+        run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_USER=${{ vars.DB_USER }}"
       - name: Bei GHCR anmelden
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
@@ -90,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - name: DB Secret and env
-        run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_USER=${{ env.DB_USER }}"
+        run: echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_USER=${{ vars.DB_USER }}"
       - name: Image-Namen festlegen
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
       - name: Statusseite erzeugen
