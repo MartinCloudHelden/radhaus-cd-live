@@ -59,6 +59,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Image-Namen festlegen
         run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - run: echo "DB_PASSWORD=$DB_PASSWORD DB_USER=$DB_USER"
       - name: Bei GHCR anmelden
         uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
@@ -67,3 +68,33 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Smoke Test
         run: bash scripts/smoke-test.sh "$IMAGE"
+
+  freigabe:
+    needs: staging
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: echo "Freigabe erteilt für $GITHUB_SHA"
+
+  produktion:
+    needs: freigabe
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - run: echo "DB_PASSWORD=$DB_PASSWORD DB_USER=$DB_USER"
+      - name: Image-Namen festlegen
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY,,}:${GITHUB_SHA}" >> "$GITHUB_ENV"
+      - name: Statusseite erzeugen
+        run: bash scripts/statusseite.sh "$IMAGE"
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: public
+      - id: deployment
+        uses: actions/deploy-pages@v5
